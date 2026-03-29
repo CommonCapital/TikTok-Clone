@@ -1,8 +1,8 @@
-import { User } from '@/src/types/types';
+import { User } from '@/types/types';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { create } from 'zustand';
 import { persist, createJSONStorage } from 'zustand/middleware';
-import { supabase } from '@/src/lib/supabase';
+import { supabase } from '@/lib/supabase'
 
 type AuthStore = {
   user: User | null;

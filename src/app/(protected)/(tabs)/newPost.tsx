@@ -7,7 +7,7 @@ import { router } from 'expo-router';
 import { useVideoPlayer, VideoView } from 'expo-video';
 import * as ImagePicker from 'expo-image-picker';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
-import { useAuthStore } from '@/stores/useAuthStore';
+import { useAuthStore } from '../../../stores/useAuthStore';
 import * as FileSystem from 'expo-file-system';
 import {  createPost, uploadVideoToStorage } from '@/services/posts';
 

@@ -1,9 +1,9 @@
 import { View, FlatList, Dimensions, ViewToken, StyleSheet, ActivityIndicator, Text, useWindowDimensions } from 'react-native'
 import React, { useRef, useState } from 'react'
-import PostListItem from '@/src/components/PostListItem'
-import posts from "@/assets/data/posts.json"
+import PostListItem from '@/components/PostListItem'; 
+import posts from "@/data/posts.json"
 import { MaterialIcons, Ionicons } from '@expo/vector-icons';
-import FeedTab from '@/src/components/GenericComponents/FeedTab';
+import FeedTab from '@/components/GenericComponents/FeedTab'; 
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useBottomTabBarHeight } from '@react-navigation/bottom-tabs';
 

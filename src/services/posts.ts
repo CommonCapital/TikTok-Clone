@@ -1,5 +1,5 @@
 
-import { PostInput } from "@/src/types/types";
+import { PostInput } from "@/types/types";
 
 type StorageInput = {
   fileName: string;
