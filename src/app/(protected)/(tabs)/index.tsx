@@ -69,7 +69,7 @@ export default function HomeScreen() {
   }
 
   return (
-    <View>
+    <View style={{ flex: 1, backgroundColor: '#000' }}>
       <View style={styles.topBar}>
         <MaterialIcons name="live-tv" size={24} color="white" />
         <View style={styles.navigationBar}>
@@ -86,10 +86,10 @@ export default function HomeScreen() {
       <PostListItem postItem={item} isActive={index === currentIndex} itemHeight={ITEM_HEIGHT} />
         )}
         getItemLayout={(data, index) => ({
-          length: height - 80,
-          offset: (height - 80) * index,
-          index
-        })}
+  length: ITEM_HEIGHT,
+  offset: ITEM_HEIGHT * index,
+  index
+})}
         initialNumToRender={3}
         maxToRenderPerBatch={3}
         windowSize={5}

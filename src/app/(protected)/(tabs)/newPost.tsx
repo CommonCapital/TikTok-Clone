@@ -84,15 +84,16 @@ function CameraScreen({ onVideoRecorded }: { onVideoRecorded: (uri: string) => v
   };
 
   const selectFromGallery = async () => {
-    const result = await ImagePicker.launchImageLibraryAsync({
-      mediaTypes: ['images','videos', 'livePhotos'],
-      allowsEditing: true,
-      aspect: [9, 16],
-    });
-    if (!result.canceled) {
-      onVideoRecorded(result.assets[0].uri);
-    }
-  };
+  const result = await ImagePicker.launchImageLibraryAsync({
+    mediaTypes: ['videos'],
+    allowsEditing: true,
+    aspect: [9, 16],
+    videoExportPreset: ImagePicker.VideoExportPreset.MediumQuality, // ✅ converts to MP4 automatically
+  });
+  if (!result.canceled) {
+    onVideoRecorded(result.assets[0].uri);
+  }
+};
 
   return (
     <View style={{ flex: 1 }}>
@@ -133,13 +134,13 @@ function VideoPreview({ uri, onDiscard }: { uri: string; onDiscard: () => void }
 
   const { mutate: createNewPost, isPending } = useMutation({
     mutationFn: async ({ video, description }: { video: string; description: string }) => {
-      const fileExtension = video.split('.').pop() || 'mp4';
+      const fileExtension = (video.split('.').pop() || 'mp4').split('?')[0];
       const fileName = `${user?.id}/${Date.now()}.${fileExtension}`;
       const file = new FileSystem.File(video);
       const fileBuffer = await file.bytes();
       if (user) {
         const videoUrl = await uploadVideoToStorage({ fileName, fileExtension, fileBuffer });
-       createPost({ video_url: videoUrl, description, user_id: user?.id });
+        await createPost({ video_url: videoUrl, description, user_id: user?.id });
       }
     },
     onSuccess: () => {
