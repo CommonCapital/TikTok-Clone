@@ -139,7 +139,7 @@ function VideoPreview({ uri, onDiscard }: { uri: string; onDiscard: () => void }
       const fileBuffer = await file.bytes();
       if (user) {
         const videoUrl = await uploadVideoToStorage({ fileName, fileExtension, fileBuffer });
-       // createPost({ video_url: videoUrl, description, user_id: user?.id });
+       createPost({ video_url: videoUrl, description, user_id: user?.id });
       }
     },
     onSuccess: () => {

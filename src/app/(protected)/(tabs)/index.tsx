@@ -1,10 +1,10 @@
-import { View, FlatList, Dimensions, ViewToken, StyleSheet, ActivityIndicator, Text, useWindowDimensions } from 'react-native'
-import React, { useRef, useState } from 'react'
-import PostListItem from '@/components/PostListItem'; 
-import posts from "@/data/posts.json"
+import { View, FlatList, Dimensions, ViewToken, StyleSheet, ActivityIndicator, Text, useWindowDimensions } from 'react-native';
+import PostListItem from '@/components/PostListItem';
+import { useMemo, useRef, useState } from 'react';
 import { MaterialIcons, Ionicons } from '@expo/vector-icons';
-import FeedTab from '@/components/GenericComponents/FeedTab'; 
-import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import FeedTab from '@/components/GenericComponents/FeedTab';
+import { useInfiniteQuery, useQuery } from '@tanstack/react-query';
+import { fetchPosts } from '@/services/posts';
 import { useBottomTabBarHeight } from '@react-navigation/bottom-tabs';
 
 const TABS = {
@@ -12,21 +12,64 @@ const TABS = {
   FOLLOWING: 'Following',
   FOR_YOU: 'For You'
 };
+
 export default function HomeScreen() {
   const { height } = useWindowDimensions(); // ← prefer hook over Dimensions.get
   const tabBarHeight = useBottomTabBarHeight(); // ← exact tab bar height
   const ITEM_HEIGHT = height - tabBarHeight;
-// accounts for home indicator
   const [currentIndex, setCurrentIndex] = useState(0);
-    const [activeTab, setActiveTab] = useState(TABS.FOR_YOU);
-  const onViewableItemsChanged = useRef(({viewableItems}: {viewableItems: ViewToken[]}) => {
- if (viewableItems.length > 0) {
-setCurrentIndex(viewableItems[0]?.index || 0)
- }
+  const [activeTab, setActiveTab] = useState(TABS.FOR_YOU);
+
+  const { data, isLoading, error, fetchNextPage, hasNextPage, isFetchingNextPage } = useInfiniteQuery({
+    queryKey: ['posts'],
+    queryFn: ({ pageParam }) => fetchPosts(pageParam),
+    initialPageParam: { limit: 3, cursor: undefined},
+    getNextPageParam: (lastPage, allPages) => {
+      if (lastPage.length === 0) {
+        return undefined;
+      }
+
+      return {
+        limit: 3,
+        cursor: lastPage[lastPage.length - 1].id,
+      }
+    }
   })
-  console.log(currentIndex)
+
+  const posts = useMemo(() => data?.pages.flat() || [], [data])
+
+  const onViewableItemsChanged = useRef(({ viewableItems }: { viewableItems: ViewToken[] }) => {
+    if (viewableItems.length > 0) {
+      setCurrentIndex(viewableItems[0]?.index || 0)
+    }
+  })
+
+  if (isLoading) {
+    return (
+      <ActivityIndicator
+        size={"large"}
+        style={{ flex: 1, justifyContent: 'center' }}
+      />
+    )
+  }
+
+  if (error) {
+    return (
+      <View style={{ flex: 1, justifyContent: 'center' }}>
+        <Text style={{
+          color: '#fff',
+          fontWeight: 'bold',
+          textAlign: 'center',
+          fontSize: 18
+        }}>
+          Error Occured While Fetchinh The Posts
+        </Text>
+      </View>
+    )
+  }
+
   return (
-     <View style={{ flex: 1 }}>
+    <View>
       <View style={styles.topBar}>
         <MaterialIcons name="live-tv" size={24} color="white" />
         <View style={styles.navigationBar}>
@@ -38,29 +81,27 @@ setCurrentIndex(viewableItems[0]?.index || 0)
       </View>
 
       <FlatList
-       style={{ flex: 1 }}
         data={posts}
         renderItem={({ item, index }) => (
-          <PostListItem postItem={item} isActive={index === currentIndex} itemHeight={ITEM_HEIGHT} />
+      <PostListItem postItem={item} isActive={index === currentIndex} itemHeight={ITEM_HEIGHT} />
         )}
         getItemLayout={(data, index) => ({
-          length: ITEM_HEIGHT,
-          offset: ITEM_HEIGHT * index,
+          length: height - 80,
+          offset: (height - 80) * index,
           index
         })}
         initialNumToRender={3}
         maxToRenderPerBatch={3}
         windowSize={5}
         showsVerticalScrollIndicator={false}
-        snapToInterval={ITEM_HEIGHT}
+        snapToInterval={height - 80}
         decelerationRate={"fast"}
         disableIntervalMomentum
         onViewableItemsChanged={onViewableItemsChanged.current}
         viewabilityConfig={{ itemVisiblePercentThreshold: 50 }}
-        
+        onEndReached={() => !isFetchingNextPage && hasNextPage && fetchNextPage()}
         onEndReachedThreshold={2}
       />
-    
     </View>
   )
 }
